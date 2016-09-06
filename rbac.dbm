@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.8.2" last-position="0,125" last-zoom="1"
+<dbmodel pgmodeler-ver="0.8.2" last-position="0,133" last-zoom="1"
 	 default-schema="public" default-owner="postgres">
 <database name="rbac">
 </database>
@@ -11,41 +11,16 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <schema name="public" fill-color="#e1e1e1" sql-disabled="true">
 </schema>
 
-<schema name="rbac" rect-visible="true" fill-color="#e1e1e1">
-	<role name="postgres"/>
-</schema>
-
-<table name="users">
+<usertype name="signon" configuration="enumeration">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="120" y="183"/>
-	<column name="user_id" not-null="true">
-		<type name="bigserial"/>
-	</column>
-	<column name="username" not-null="true">
-		<type name="varchar" length="100"/>
-	</column>
-	<column name="password" not-null="true">
-		<type name="varchar" length="100"/>
-	</column>
-	<column name="profile_id_profiles" not-null="true">
-		<type name="integer"/>
-	</column>
-	<column name="salt" not-null="true">
-		<type name="varchar"/>
-	</column>
-	<constraint name="pk_users" type="pk-constr" table="public.users">
-		<columns names="user_id" ref-type="src-columns"/>
-	</constraint>
-	<constraint name="uq_users_username" type="uq-constr" table="public.users">
-		<columns names="username" ref-type="src-columns"/>
-	</constraint>
-</table>
+	<enumeration values="local,google,facebook,twitter,github"/>
+</usertype>
 
 <table name="profiles">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="500" y="303"/>
+	<position x="500" y="300"/>
 	<column name="profile_id" not-null="true">
 		<type name="bigserial"/>
 	</column>
@@ -63,7 +38,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="roles">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="80" y="423"/>
+	<position x="80" y="420"/>
 	<column name="role_id" not-null="true">
 		<type name="bigserial"/>
 	</column>
@@ -81,7 +56,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="objects">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="600" y="463"/>
+	<position x="600" y="460"/>
 	<column name="object_id" not-null="true">
 		<type name="bigserial"/>
 	</column>
@@ -99,7 +74,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="profiles_roles">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="500" y="383"/>
+	<position x="500" y="380"/>
 	<column name="profile_id_profiles" not-null="true">
 		<type name="integer"/>
 	</column>
@@ -114,7 +89,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="users_roles">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="120" y="303"/>
+	<position x="120" y="340"/>
 	<column name="user_id_users" not-null="true">
 		<type name="integer"/>
 	</column>
@@ -129,7 +104,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="users_objects">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="600" y="183"/>
+	<position x="600" y="180"/>
 	<column name="user_id_users" not-null="true">
 		<type name="integer"/>
 	</column>
@@ -171,7 +146,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="roles_roles">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="100" y="563"/>
+	<position x="100" y="560"/>
 	<column name="role_id_roles" not-null="true">
 		<type name="integer"/>
 	</column>
@@ -183,11 +158,56 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<constraint name="fk_users_profiles" type="fk-constr" comparison-type="MATCH FULL"
-	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.profiles" table="public.users">
-	<columns names="profile_id_profiles" ref-type="src-columns"/>
-	<columns names="profile_id" ref-type="dst-columns"/>
-</constraint>
+<usertype name="account_state" configuration="enumeration">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<enumeration values="verifying,enabled,disabled"/>
+</usertype>
+
+<table name="users">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="80" y="160"/>
+	<column name="user_id" not-null="true">
+		<type name="bigserial"/>
+	</column>
+	<column name="profile_id_profiles" not-null="true">
+		<type name="integer"/>
+	</column>
+	<column name="signon_type" not-null="true" default-value="'local'">
+		<type name="public.signon"/>
+	</column>
+	<column name="username">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="email">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="password">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="salt">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="user_state" not-null="true" default-value="'verifying'">
+		<type name="public.account_state"/>
+	</column>
+	<column name="first_name">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="last_name">
+		<type name="varchar" length="100"/>
+	</column>
+	<constraint name="pk_users" type="pk-constr" table="public.users">
+		<columns names="user_id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="uq_users_username" type="uq-constr" table="public.users">
+		<columns names="username" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="uq_users_email" type="uq-constr" table="public.users">
+		<columns names="email" ref-type="src-columns"/>
+	</constraint>
+</table>
 
 <constraint name="fk_profiles_roles_profiles" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.profiles" table="public.profiles_roles">
@@ -247,6 +267,12 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.roles" table="public.roles_roles">
 	<columns names="roles_role_id" ref-type="src-columns"/>
 	<columns names="role_id" ref-type="dst-columns"/>
+</constraint>
+
+<constraint name="fk_users_profiles" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.profiles" table="public.users">
+	<columns names="profile_id_profiles" ref-type="src-columns"/>
+	<columns names="profile_id" ref-type="dst-columns"/>
 </constraint>
 
 <relationship name="rel_users_profiles" type="relfk"

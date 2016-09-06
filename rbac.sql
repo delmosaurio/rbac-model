@@ -14,21 +14,12 @@
 -- -- ddl-end --
 -- 
 
--- object: public.users | type: TABLE --
--- DROP TABLE IF EXISTS public.users CASCADE;
-CREATE TABLE public.users(
-	user_id bigserial NOT NULL,
-	username varchar(100) NOT NULL,
-	password varchar(100) NOT NULL,
-	profile_id_profiles integer NOT NULL,
-	salt varchar NOT NULL,
-	active bool NOT NULL,
-	CONSTRAINT pk_users PRIMARY KEY (user_id),
-	CONSTRAINT uq_users_username UNIQUE (username)
-
-);
+-- object: public.signon | type: TYPE --
+-- DROP TYPE IF EXISTS public.signon CASCADE;
+CREATE TYPE public.signon AS
+ ENUM ('local','google','facebook','twitter','github');
 -- ddl-end --
-ALTER TABLE public.users OWNER TO postgres;
+ALTER TYPE public.signon OWNER TO postgres;
 -- ddl-end --
 
 -- object: public.profiles | type: TABLE --
@@ -134,11 +125,34 @@ CREATE TABLE public.roles_roles(
 ALTER TABLE public.roles_roles OWNER TO postgres;
 -- ddl-end --
 
--- object: fk_users_profiles | type: CONSTRAINT --
--- ALTER TABLE public.users DROP CONSTRAINT IF EXISTS fk_users_profiles CASCADE;
-ALTER TABLE public.users ADD CONSTRAINT fk_users_profiles FOREIGN KEY (profile_id_profiles)
-REFERENCES public.profiles (profile_id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
+-- object: public.account_state | type: TYPE --
+-- DROP TYPE IF EXISTS public.account_state CASCADE;
+CREATE TYPE public.account_state AS
+ ENUM ('verifying','enabled','disabled');
+-- ddl-end --
+ALTER TYPE public.account_state OWNER TO postgres;
+-- ddl-end --
+
+-- object: public.users | type: TABLE --
+-- DROP TABLE IF EXISTS public.users CASCADE;
+CREATE TABLE public.users(
+	user_id bigserial NOT NULL,
+	profile_id_profiles integer NOT NULL,
+	signon_type public.signon NOT NULL DEFAULT 'local',
+	username varchar(100),
+	email varchar(100),
+	password varchar(100),
+	salt varchar(100),
+	user_state public.account_state NOT NULL DEFAULT 'verifying',
+	first_name varchar(100),
+	last_name varchar(100),
+	CONSTRAINT pk_users PRIMARY KEY (user_id),
+	CONSTRAINT uq_users_username UNIQUE (username),
+	CONSTRAINT uq_users_email UNIQUE (email)
+
+);
+-- ddl-end --
+ALTER TABLE public.users OWNER TO postgres;
 -- ddl-end --
 
 -- object: fk_profiles_roles_profiles | type: CONSTRAINT --
@@ -208,6 +222,13 @@ ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ALTER TABLE public.roles_roles DROP CONSTRAINT IF EXISTS fk_roles_role_id_roles CASCADE;
 ALTER TABLE public.roles_roles ADD CONSTRAINT fk_roles_role_id_roles FOREIGN KEY (roles_role_id)
 REFERENCES public.roles (role_id) MATCH FULL
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: fk_users_profiles | type: CONSTRAINT --
+-- ALTER TABLE public.users DROP CONSTRAINT IF EXISTS fk_users_profiles CASCADE;
+ALTER TABLE public.users ADD CONSTRAINT fk_users_profiles FOREIGN KEY (profile_id_profiles)
+REFERENCES public.profiles (profile_id) MATCH FULL
 ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ddl-end --
 
