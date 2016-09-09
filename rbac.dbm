@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.8.2" last-position="0,132" last-zoom="1"
+<dbmodel pgmodeler-ver="0.8.2" last-position="0,1" last-zoom="1"
 	 default-schema="public" default-owner="postgres">
 <database name="rbac">
 </database>
@@ -62,6 +62,9 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 	<column name="object_name" not-null="true">
 		<type name="varchar" length="100"/>
+	</column>
+	<column name="application_id_applications" not-null="true">
+		<type name="integer"/>
 	</column>
 	<constraint name="pk_objects" type="pk-constr" table="public.objects">
 		<columns names="object_id" ref-type="src-columns"/>
@@ -167,7 +170,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="users">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="80" y="160"/>
+	<position x="60" y="120"/>
 	<column name="user_id" not-null="true">
 		<type name="bigserial"/>
 	</column>
@@ -186,7 +189,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="password">
 		<type name="varchar" length="100"/>
 	</column>
-	<column name="salt">
+	<column name="user_salt">
 		<type name="varchar" length="100"/>
 	</column>
 	<column name="user_state" not-null="true" default-value="'verifying'">
@@ -208,6 +211,60 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<columns names="email" ref-type="src-columns"/>
 	</constraint>
 </table>
+
+<usertype name="token_type" configuration="enumeration">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<enumeration values="activation,password_change"/>
+</usertype>
+
+<table name="tokens">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="440" y="40"/>
+	<column name="token" not-null="true">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="user_id_users" not-null="true">
+		<type name="integer"/>
+	</column>
+	<column name="type" not-null="true">
+		<type name="public.token_type"/>
+	</column>
+	<column name="expiration" not-null="true">
+		<type name="date"/>
+	</column>
+	<column name="token_salt" not-null="true">
+		<type name="varchar" length="100"/>
+	</column>
+	<constraint name="pk_tokens" type="pk-constr" table="public.tokens">
+		<columns names="token" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="applications">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="920" y="320"/>
+	<column name="application_id" not-null="true">
+		<type name="bigserial"/>
+	</column>
+	<column name="application_name" not-null="true">
+		<type name="varchar" length="100"/>
+	</column>
+	<constraint name="pk_applications" type="pk-constr" table="public.applications">
+		<columns names="application_id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="uq_applications_name" type="uq-constr" table="public.applications">
+		<columns names="application_name" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<constraint name="fk_objects_applications" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.applications" table="public.objects">
+	<columns names="application_id_applications" ref-type="src-columns"/>
+	<columns names="application_id" ref-type="dst-columns"/>
+</constraint>
 
 <constraint name="fk_profiles_roles_profiles" type="fk-constr" comparison-type="MATCH FULL"
 	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.profiles" table="public.profiles_roles">
@@ -275,6 +332,12 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<columns names="profile_id" ref-type="dst-columns"/>
 </constraint>
 
+<constraint name="fk_tokes_users" type="fk-constr" comparison-type="MATCH FULL"
+	 upd-action="NO ACTION" del-action="NO ACTION" ref-table="public.users" table="public.tokens">
+	<columns names="user_id_users" ref-type="src-columns"/>
+	<columns names="user_id" ref-type="dst-columns"/>
+</constraint>
+
 <relationship name="rel_users_profiles" type="relfk"
 	 src-table="public.users"
 	 dst-table="public.profiles"
@@ -327,6 +390,16 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <relationship name="rel_roles_roles_roles" type="relfk"
 	 src-table="public.roles_roles"
 	 dst-table="public.roles"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_tokens_users" type="relfk"
+	 src-table="public.tokens"
+	 dst-table="public.users"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="rel_objects_applications" type="relfk"
+	 src-table="public.objects"
+	 dst-table="public.applications"
 	 src-required="false" dst-required="false"/>
 
 </dbmodel>

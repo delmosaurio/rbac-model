@@ -53,6 +53,7 @@ ALTER TABLE public.roles OWNER TO postgres;
 CREATE TABLE public.objects(
 	object_id bigserial NOT NULL,
 	object_name varchar(100) NOT NULL,
+	application_id_applications integer NOT NULL,
 	CONSTRAINT pk_objects PRIMARY KEY (object_id),
 	CONSTRAINT uq_objects_object_name UNIQUE (object_name)
 
@@ -142,7 +143,7 @@ CREATE TABLE public.users(
 	username varchar(100) NOT NULL,
 	email varchar(100) NOT NULL,
 	password varchar(100),
-	salt varchar(100),
+	user_salt varchar(100),
 	user_state public.account_state NOT NULL DEFAULT 'verifying',
 	first_name varchar(100),
 	last_name varchar(100),
@@ -153,6 +154,49 @@ CREATE TABLE public.users(
 );
 -- ddl-end --
 ALTER TABLE public.users OWNER TO postgres;
+-- ddl-end --
+
+-- object: public.token_type | type: TYPE --
+-- DROP TYPE IF EXISTS public.token_type CASCADE;
+CREATE TYPE public.token_type AS
+ ENUM ('activation','password_change');
+-- ddl-end --
+ALTER TYPE public.token_type OWNER TO postgres;
+-- ddl-end --
+
+-- object: public.tokens | type: TABLE --
+-- DROP TABLE IF EXISTS public.tokens CASCADE;
+CREATE TABLE public.tokens(
+	token varchar(100) NOT NULL,
+	user_id_users integer NOT NULL,
+	type public.token_type NOT NULL,
+	expiration date NOT NULL,
+	token_salt varchar(100) NOT NULL,
+	CONSTRAINT pk_tokens PRIMARY KEY (token)
+
+);
+-- ddl-end --
+ALTER TABLE public.tokens OWNER TO postgres;
+-- ddl-end --
+
+-- object: public.applications | type: TABLE --
+-- DROP TABLE IF EXISTS public.applications CASCADE;
+CREATE TABLE public.applications(
+	application_id bigserial NOT NULL,
+	application_name varchar(100) NOT NULL,
+	CONSTRAINT pk_applications PRIMARY KEY (application_id),
+	CONSTRAINT uq_applications_name UNIQUE (application_name)
+
+);
+-- ddl-end --
+ALTER TABLE public.applications OWNER TO postgres;
+-- ddl-end --
+
+-- object: fk_objects_applications | type: CONSTRAINT --
+-- ALTER TABLE public.objects DROP CONSTRAINT IF EXISTS fk_objects_applications CASCADE;
+ALTER TABLE public.objects ADD CONSTRAINT fk_objects_applications FOREIGN KEY (application_id_applications)
+REFERENCES public.applications (application_id) MATCH FULL
+ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ddl-end --
 
 -- object: fk_profiles_roles_profiles | type: CONSTRAINT --
@@ -229,6 +273,13 @@ ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ALTER TABLE public.users DROP CONSTRAINT IF EXISTS fk_users_profiles CASCADE;
 ALTER TABLE public.users ADD CONSTRAINT fk_users_profiles FOREIGN KEY (profile_id_profiles)
 REFERENCES public.profiles (profile_id) MATCH FULL
+ON DELETE NO ACTION ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: fk_tokes_users | type: CONSTRAINT --
+-- ALTER TABLE public.tokens DROP CONSTRAINT IF EXISTS fk_tokes_users CASCADE;
+ALTER TABLE public.tokens ADD CONSTRAINT fk_tokes_users FOREIGN KEY (user_id_users)
+REFERENCES public.users (user_id) MATCH FULL
 ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ddl-end --
 
