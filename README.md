@@ -81,6 +81,7 @@ fn_access_user_object(
 fn_add_role_profile(
   _role_id integer, _profile_id integer
 )
+```
 
 **Elimina la relación para un role y un perfil**
 
@@ -88,6 +89,7 @@ fn_add_role_profile(
 fn_remove_role_profile(
   _role_id integer, _profile_id integer
 )
+```
 
 ## VIEWS
   - v_users
