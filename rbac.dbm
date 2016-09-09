@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.8.2" last-position="0,133" last-zoom="1"
+<dbmodel pgmodeler-ver="0.8.2" last-position="0,132" last-zoom="1"
 	 default-schema="public" default-owner="postgres">
 <database name="rbac">
 </database>
@@ -177,10 +177,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="signon_type" not-null="true" default-value="'local'">
 		<type name="public.signon"/>
 	</column>
-	<column name="username">
+	<column name="username" not-null="true">
 		<type name="varchar" length="100"/>
 	</column>
-	<column name="email">
+	<column name="email" not-null="true">
 		<type name="varchar" length="100"/>
 	</column>
 	<column name="password">

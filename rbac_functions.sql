@@ -180,3 +180,55 @@ BEGIN
     return access;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Procedure fn_add_role_profile
+CREATE OR REPLACE FUNCTION fn_add_role_profile(
+  _role_id integer,
+  _profile_id integer
+) 
+RETURNS void AS $$
+BEGIN
+  IF NOT EXISTS (select role_id_roles from profiles_roles where role_id_roles = _role_id and profile_id_profiles = _profile_id)
+  THEN
+      insert into profiles_roles (profile_id_profiles, role_id_roles)
+        VALUES (_profile_id, _role_id);
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Procedure fn_add_role_profile
+CREATE OR REPLACE FUNCTION fn_remove_role_profile(
+  _role_id integer,
+  _profile_id integer
+) 
+RETURNS void AS $$
+BEGIN
+  IF EXISTS (select role_id_roles from profiles_roles where role_id_roles = _role_id and profile_id_profiles = _profile_id)
+  THEN
+      DELETE FROM profiles_roles where role_id_roles = _role_id and profile_id_profiles = _profile_id;
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- views
+CREATE OR REPLACE VIEW v_users AS
+  select * from profiles, users
+    where profile_id = profile_id_profiles;
+
+CREATE OR REPLACE VIEW v_profiles_roles AS
+  select * from profiles, profiles_roles, roles
+    where profile_id = profile_id_profiles and role_id = role_id_roles;
+
+CREATE OR REPLACE VIEW v_user_objects as
+  SELECT * FROM (select 
+    u.user_id,
+    o.*,
+    (select public.fn_access_user_object(CAST(u.user_id as integer), CAST(o.object_id as integer))) as "access"
+  from users u, objects o) as tbl WHERE "access" is not null;
+
+CREATE OR REPLACE VIEW v_roles_objects as
+  SELECT * FROM (select 
+    r.role_id,
+    o.*,
+    (select public.fn_access_role_object(CAST(r.role_id as integer), CAST(o.object_id as integer))) as "access"
+  from roles r, objects o) as tbl WHERE tbl.access is not null;
