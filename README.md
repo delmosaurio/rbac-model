@@ -74,3 +74,23 @@ fn_access_user_object(
   _user_id integer,  _object_id integer
 )
 ```
+
+**Relaciona un role a un perfil**
+
+```
+fn_add_role_profile(
+  _role_id integer, _profile_id integer
+)
+
+**Elimina la relación para un role y un perfil**
+
+```
+fn_remove_role_profile(
+  _role_id integer, _profile_id integer
+)
+
+## VIEWS
+  - v_users
+  - v_profiles_roles
+  - v_user_objects
+  - v_roles_objects
