@@ -6,6 +6,8 @@ CREATE TABLE "session" (
 WITH (OIDS=FALSE);
 ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
 
+-- bruto force
+create table brute(id text primary key, count int, first_request timestamptz, last_request timestamptz, expires timestamptz);
 
 CREATE OR REPLACE FUNCTION bit_xor(
   _value_a integer,

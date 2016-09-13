@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.8.2" last-position="0,1" last-zoom="1"
+<dbmodel pgmodeler-ver="0.8.2" last-position="0,0" last-zoom="1"
 	 default-schema="public" default-owner="postgres">
 <database name="rbac">
 </database>
@@ -200,6 +200,15 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</column>
 	<column name="last_name">
 		<type name="varchar" length="100"/>
+	</column>
+	<column name="google_id">
+		<type name="varchar" length="100"/>
+	</column>
+	<column name="account_image">
+		<type name="varchar" length="200"/>
+	</column>
+	<column name="account_google_url">
+		<type name="varchar" length="200"/>
 	</column>
 	<constraint name="pk_users" type="pk-constr" table="public.users">
 		<columns names="user_id" ref-type="src-columns"/>

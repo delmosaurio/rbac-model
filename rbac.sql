@@ -147,6 +147,9 @@ CREATE TABLE public.users(
 	user_state public.account_state NOT NULL DEFAULT 'verifying',
 	first_name varchar(100),
 	last_name varchar(100),
+	google_id varchar(100),
+	account_image varchar(200),
+	account_google_url varchar(200),
 	CONSTRAINT pk_users PRIMARY KEY (user_id),
 	CONSTRAINT uq_users_username UNIQUE (username),
 	CONSTRAINT uq_users_email UNIQUE (email)
